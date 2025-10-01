@@ -15,6 +15,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
+import model.services.DepartmentService;
+import sun.print.resources.serviceui;
 
 public class MainViewController implements Initializable {
 	
@@ -34,7 +36,7 @@ public class MainViewController implements Initializable {
 	
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		loadView("/gui/DepartmentList.fxml");
+		loadView2("/gui/DepartmentList.fxml");
 	}
 	
 	@FXML
@@ -61,6 +63,32 @@ public class MainViewController implements Initializable {
 			mainVBox.getChildren().clear(); // LIMPANDO TODOS OS FILHOS DO MAINVBOX
 			mainVBox.getChildren().add(mainMenu); // ADICIONANDO O MAIN MENU E OS FILHOS DO MAIN VBOX NO MAIN VBOX
 			mainVBox.getChildren().addAll(newVBox.getChildren());
+			
+		} 
+		catch (IOException e) {
+			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
+	}
+	
+	private synchronized void loadView2(String absoluteName) { // CARREGANDO A VIEW
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			VBox newVBox = loader.load();
+			
+			Scene mainScene = Main.getMainScene(); // REFERENCIANDO A 'CENA' DO MAIN
+			VBox mainVBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();
+			// O 'GETROOT' PEGA A PRIMEIRA
+			
+			// MANIPULANDO A CENA PRINCIPAL, INCLUINDO NELA ALÉM DO MAIN MENU, OS FILHOS DA JANELA QUE TIVER ABRINDO:
+			
+			Node mainMenu = mainVBox.getChildren().get(0); // PEGANDO O PRIMEIRO FILHO DO VBOX DA JANELA PRINCIPAL (MAIN MENU)
+			mainVBox.getChildren().clear(); // LIMPANDO TODOS OS FILHOS DO MAINVBOX
+			mainVBox.getChildren().add(mainMenu); // ADICIONANDO O MAIN MENU E OS FILHOS DO MAIN VBOX NO MAIN VBOX
+			mainVBox.getChildren().addAll(newVBox.getChildren());
+			
+			DepartmentListController controller = loader.getController(); // PEGANDO REFERENCIA PARA O CONTROLER DA VIEW
+			controller.setDepartmentService(new DepartmentService()); // INJETAR A DEPENDENCIA NO CONTROLLER
+			controller.updateTableView(); // ATUALIZANDO OS DADOS NA TELA DA TABLE VIEW
 			
 		} 
 		catch (IOException e) {
