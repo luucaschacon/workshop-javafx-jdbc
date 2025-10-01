@@ -3,6 +3,7 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import application.Main;
 import gui.util.Alerts;
@@ -16,7 +17,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import model.services.DepartmentService;
-import sun.print.resources.serviceui;
 
 public class MainViewController implements Initializable {
 	
@@ -36,19 +36,22 @@ public class MainViewController implements Initializable {
 	
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		loadView2("/gui/DepartmentList.fxml");
+		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) -> { // FUNÇÃO DE INICIALIZAÇÃO
+			controller.setDepartmentService(new DepartmentService());
+			controller.updateTableView();
+		});
 	}
 	
 	@FXML
 	public void onMenuItemAboutAction() {
-		loadView("/gui/About.fxml");
+		loadView("/gui/About.fxml", x -> {});
 	}
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {		
 	}
 	
-	private synchronized void loadView(String absoluteName) { // CARREGANDO A VIEW
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) { // CARREGANDO A VIEW
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			VBox newVBox = loader.load();
@@ -64,32 +67,8 @@ public class MainViewController implements Initializable {
 			mainVBox.getChildren().add(mainMenu); // ADICIONANDO O MAIN MENU E OS FILHOS DO MAIN VBOX NO MAIN VBOX
 			mainVBox.getChildren().addAll(newVBox.getChildren());
 			
-		} 
-		catch (IOException e) {
-			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-		}
-	}
-	
-	private synchronized void loadView2(String absoluteName) { // CARREGANDO A VIEW
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-			VBox newVBox = loader.load();
-			
-			Scene mainScene = Main.getMainScene(); // REFERENCIANDO A 'CENA' DO MAIN
-			VBox mainVBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();
-			// O 'GETROOT' PEGA A PRIMEIRA
-			
-			// MANIPULANDO A CENA PRINCIPAL, INCLUINDO NELA ALÉM DO MAIN MENU, OS FILHOS DA JANELA QUE TIVER ABRINDO:
-			
-			Node mainMenu = mainVBox.getChildren().get(0); // PEGANDO O PRIMEIRO FILHO DO VBOX DA JANELA PRINCIPAL (MAIN MENU)
-			mainVBox.getChildren().clear(); // LIMPANDO TODOS OS FILHOS DO MAINVBOX
-			mainVBox.getChildren().add(mainMenu); // ADICIONANDO O MAIN MENU E OS FILHOS DO MAIN VBOX NO MAIN VBOX
-			mainVBox.getChildren().addAll(newVBox.getChildren());
-			
-			DepartmentListController controller = loader.getController(); // PEGANDO REFERENCIA PARA O CONTROLER DA VIEW
-			controller.setDepartmentService(new DepartmentService()); // INJETAR A DEPENDENCIA NO CONTROLLER
-			controller.updateTableView(); // ATUALIZANDO OS DADOS NA TELA DA TABLE VIEW
-			
+			T controller = loader.getController(); // O GET CONTROLER VAI RETORNAR O CONTROLADOR DO TIPO QUE FOR CHAMADO
+			initializingAction.accept(controller); // EXECUTANDO A AÇÃO 'INITIALIZING ACTION'
 		} 
 		catch (IOException e) {
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
