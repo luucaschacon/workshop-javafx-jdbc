@@ -24,4 +24,8 @@ public class DepartmentService {
 		// SE FOR UM DEPARTAMENTO QUE JÁ TEM ID, SIGNIFICA QUE O DEPARTAMENTO JÁ EXISTE E VAI SER ATUALIZADO
 		}
 	}
+	
+	public void remove(Department obj) {
+		dao.deleteById(obj.getId());
+	}
 }
