@@ -46,7 +46,8 @@ public class DepartmentListController implements Initializable{
 	@FXML
 	public void onBtNewAction(ActionEvent event) {
 		Stage parentStage = gui.util.Utils.currentStage(event);
-		createDialogForm("/gui/DepartmentForm.fxml", parentStage);
+		Department obj = new Department(); // INICIANDO UM FORMULARIO VAZIO
+		createDialogForm(obj, "/gui/DepartmentForm.fxml", parentStage);
 	}
 	
 	// INJETANDO DEPENDENCIA FAZENDO INVERSÃO DE CONTROLE:
@@ -82,10 +83,14 @@ public class DepartmentListController implements Initializable{
 
 	// FUNÇÃO PARA CARREGAR A JANELA DO FORMULARIO PARA PREENCHER UM NOVO DEPARTAMENTO:
 	
-	private void createDialogForm(String absoluteName, Stage parentStage) { // INFORMANDO QUEM É O STAGE QUE CRIOU A JANELA DE DIALOGO
+	private void createDialogForm(Department obj, String absoluteName, Stage parentStage) { // INFORMANDO QUEM É O STAGE QUE CRIOU A JANELA DE DIALOGO
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			Pane pane = loader.load();
+			
+			DepartmentFormController controller = loader.getController(); // PEGANDO O CONTROLADOR DA TELA QUE ACABOU DE CARREGAR (}O FORMULÁRIO)
+			controller.setDepartment(obj); // INJETAR NO CONTROLADOR O DEPARTAMENTO
+			controller.updateFormData(); // CARREGAR OS DADOS DO OBJETO INJETADO NO FORMULÁRIO
 			
 			Stage dialogStage = new Stage();
 			dialogStage.setTitle("Enter Department data:");
