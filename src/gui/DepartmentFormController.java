@@ -1,19 +1,22 @@
 package gui;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import db.DbException;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import model.entities.Department;
 import model.services.DepartmentService;
 
@@ -22,6 +25,9 @@ public class DepartmentFormController implements Initializable{
 	private Department entity; // DEPENDENCIA PARA O DEPARTAMENTO
 	
 	private DepartmentService service;
+	
+	private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
+	// LISTA PARA OS OBJETOS SE INSCREVEREM E RECEBER O EVENTO
 	
 	@FXML
 	private TextField txtId;
@@ -46,6 +52,11 @@ public class DepartmentFormController implements Initializable{
 		this.service = service;
 	}
 	
+	// MÉTODO PARA INSCREVER O LISTENER NA LISTA (ADICIONAR NA LISTA)
+	public void subscribeDataChangeListener(DataChangeListener listener) {
+		dataChangeListeners.add(listener);
+	}
+	
 	@FXML
 	public void onBtSaveAction(ActionEvent event) {
 		if (entity == null) {
@@ -57,6 +68,7 @@ public class DepartmentFormController implements Initializable{
 		try {
 			entity = getFormData(); // PEGA OS DADOS DA CAIXA DO FORMULÁRIO E INSTANCIA UM DEPARTAMENTO
 			service.saveOrUpdate(entity); // SALVANDO NO BANCO DE DADOS
+			notifyDataChangeListeners(); // NOTIFICAR OS DADOS ALTERADOS
 			Utils.currentStage(event).close(); // SALVANDO COM SUCESSO FECHA A JANELA
 		}
 		catch (DbException e) {
@@ -64,6 +76,13 @@ public class DepartmentFormController implements Initializable{
 		}
 	}
 	
+	// PARA CADA ALTERAÇÃO DA LISTA ELE NOTIFICA
+	private void notifyDataChangeListeners() {
+		for (DataChangeListener listener : dataChangeListeners) {
+			listener.onDataChanged();
+		}
+	}
+
 	private Department getFormData() { // PEGA OS DADOS DO FORMULÁRIO E RETORNAR UM NOVO OBJETO
 		Department obj = new Department();
 		
