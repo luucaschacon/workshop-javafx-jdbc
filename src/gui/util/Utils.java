@@ -31,6 +31,15 @@ public class Utils {
 		}
 	}
 	
+	public static Double tryParseToDouble(String str) {
+		try {
+			return Double.parseDouble(str);
+		}
+		catch (NumberFormatException e) { // SE CASO O VALOR DIGITADO ESTEJA DIVERGENTE E NÃO DE PARA CONVERTER, ELE VOLTA NULO
+			return null;
+		}
+	}
+	
 	public static <T> void formatTableColumnDate(TableColumn<T, Date> tableColumn, String format) { 
 		tableColumn.setCellFactory(column -> { 
 			TableCell<T, Date> cell = new TableCell<T, Date>() { 
